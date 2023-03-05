@@ -140,20 +140,26 @@ class CreateListDir {
 };
 
 // Customized "free()" function to free the memory from list strings
-static void mfree(char **ls, size_t __sz = 0)
+static void mfree(char** ls, size_t __sz = 0)
 {
+    // Get sizeof list instead if 2nd parameter is passed
     if (__sz == 0) __sz = sizeof(ls);
+    
+    // Free the memory each strings inside list
     for (int i = 0; i < __sz; i++) {
         free(ls[i]);
     }
-    free(ls);
+    free(ls); // Free the memory list
 }
 
 // Simple function to print the list quickly, then free the memory
-void printl(char **ls, size_t __szlist)
+void printl(char** ls, size_t __szlist)
 {
+    // Iterate list and print each strings
     for (int i = 0; i < __szlist; i++) {
         fprintf(stdout, "%s\n", ls[i]);
     }
+
+    // Free the memory list using "mfree()"
     mfree(ls);
 }
