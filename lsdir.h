@@ -29,6 +29,8 @@
 class CreateListDir {
     private:
         const char* dirpath;
+        char txtcolor[12];
+        bool w_color;
 
         // Get total of files and directories
         unsigned int count_listdir(void)
@@ -72,13 +74,48 @@ class CreateListDir {
         const unsigned int dirsize;
 
         // :: Constructor
-        CreateListDir(char* __dp)
-        : dirpath(__dp), dirsize(this->count_listdir())
-        { }
+        CreateListDir(char* __dp, bool __wclr = false, int __iclr = 2)
+        : dirpath(__dp), dirsize(this->count_listdir()), w_color(__wclr)
+        {
+            /** ---
+            * Check whether is Windows or Linux
+            * If Windows (_WIN32), "w_color" will turn false.
+            *
+            * You can comment these code below, if you want.
+            --- **/
+            #if !( defined(__linux__) || defined(__unix__) ) && \
+                    defined(_WIN32)
+                this->w_color = false;
+            #endif
+
+
+
+            // Use bright color (90 .. 99)
+            bool use_bright = false;
+
+            if (this->w_color) {
+                // Return value to default if index greater than 19 or negative value
+                if (__iclr > 19 || __iclr < 0) __iclr = 2;
+
+                // Use bright color when index greater than 9, but less than 20
+                else if (__iclr > 9 && __iclr < 20) {
+                    __iclr -= 10; // Subtract by 10
+                    use_bright = true; // Turn ON the "use_bright"
+                }
+
+                // Create the color code and copy to "txtcolor"
+                if (use_bright) {
+                    sprintf(this->txtcolor, "\e[9%dm", __iclr);
+                } else {
+                    sprintf(this->txtcolor, "\e[3%dm", __iclr);
+                }
+            }
+        }
 
         // :: Destructor
         ~CreateListDir(void)
-        { }
+        { NULL; }
+
 
         /** -----
         *   This function will get a list of directory
@@ -126,7 +163,15 @@ class CreateListDir {
                         strcmp(entry->d_name, "..") == 0) {
                     continue;
                 }
-                sprintf(listdir[i++], "%s", entry->d_name);
+
+                // Check whether "w_color" is true or false
+                if (this->w_color) {
+                    // Add color with the entry name to list entries
+                    sprintf(listdir[i++], "%s%s\e[0m", this->txtcolor, entry->d_name);
+                } else {
+                    // Just add the entry name
+                    sprintf(listdir[i++], "%s", entry->d_name);
+                }
             }
 
             // Sorting the list by alphabet using "qsort()"
@@ -139,17 +184,24 @@ class CreateListDir {
         }
 };
 
+
+/////////////////////////
+// ADDITIONAL FUNCTION //
+/////////////////////////
+
 // Customized "free()" function to free the memory from list strings
-static void mfree(char** ls, size_t __sz = 0)
+void mfree(char** ls, size_t __sz = 0)
 {
-    // Get sizeof list instead if 2nd parameter is passed
+    // Get sizeof list instead, if 2nd parameter is passed
     if (__sz == 0) __sz = sizeof(ls);
     
-    // Free the memory each strings inside list
+    // Iterate list and free the memory each strings
     for (int i = 0; i < __sz; i++) {
         free(ls[i]);
     }
-    free(ls); // Free the memory list
+    
+    // Free the memory list strings
+    free(ls);
 }
 
 // Simple function to print the list quickly, then free the memory
