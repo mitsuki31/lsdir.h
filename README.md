@@ -80,7 +80,7 @@ int main(int argc, char* argv[ ]) {
     if (argc >= 2) {
         sprintf(dirpath, "%s", argv[1]);
         if (argc >= 3) {
-            if (strcmp(argv[2], "-C") == 0 || strcmp(argv[2], "-c") ==>
+            if (strcmp(argv[2], "-C") == 0 || strcmp(argv[2], "-c") == 0) {
                 if (argc == 4) idclr = atoi(argv[3]);
                 useclr = true;
             } else {
